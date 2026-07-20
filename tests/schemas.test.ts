@@ -4,6 +4,7 @@ import {
   FxConvertTransaction,
   JournalEntry,
   MonitorAlert,
+  PortfolioHealthReport,
   PortfolioState,
   RulesFile,
   RunRecord,
@@ -80,6 +81,16 @@ describe("transaction schema", () => {
 });
 
 describe("record schemas parse their documented examples", () => {
+  it("portfolio health reports use their independently versioned v2 schema", () => {
+    const parsed = PortfolioHealthReport.safeParse({ schemaVersion: 1 });
+    expect(parsed.success).toBe(false);
+    if (!parsed.success) {
+      expect(parsed.error.issues).toContainEqual(
+        expect.objectContaining({ path: ["schemaVersion"], code: "invalid_literal" })
+      );
+    }
+  });
+
   it("snapshot", () => {
     expect(
       Snapshot.parse({

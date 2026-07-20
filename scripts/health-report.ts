@@ -141,7 +141,7 @@ async function main() {
 
     // ---- Schema-validated report -------------------------------------------
     const report = PortfolioHealthReport.parse({
-      schemaVersion: 1,
+      schemaVersion: 2,
       reportType: "portfolioHealthReport",
       generatedAt: now,
       runId,

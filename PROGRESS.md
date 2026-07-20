@@ -8,7 +8,7 @@ Update this file whenever a milestone (or meaningful chunk of one) lands.
 | Milestone | Status | Date |
 |---|---|---|
 | M0 — Contracts, source of truth, fixtures | ✅ Done | 2026-07-20 |
-| M1 — Portfolio foundation | 🟨 In progress | 2026-07-20 |
+| M1 — Portfolio foundation | ✅ Done | 2026-07-20 |
 | M2 — Research workbench | ⬜ Not started | |
 | M3 — Dashboard integration | ⬜ Not started | |
 | M4 — Monitoring engine | ⬜ Not started | |
@@ -18,7 +18,7 @@ Update this file whenever a milestone (or meaningful chunk of one) lands.
 
 ## Log
 
-### 2026-07-20 — M1 implementation in progress
+### 2026-07-20 — M1 complete
 
 The repository-side portfolio foundation is implemented and passing its checks:
 
@@ -37,12 +37,16 @@ The repository-side portfolio foundation is implemented and passing its checks:
   cost currency, or when a canonical holdings row is malformed; a partial portfolio cannot
   be saved as a complete report.
 
-Automated status: 36 tests passing; TypeScript typecheck passing.
+Automated status: 37 tests passing; TypeScript typecheck passing.
 
-Remaining before M1 can be marked complete: review and split the real Layer A financial
-records into `investor-profile.md`, `portfolio-policy.md`, and `risk-limits.yaml`, then run
-and validate the first live health report. These files represent Charles's financial
-intent and require explicit review before modification (SECURITY §5).
+The real Layer A records are split into `investor-profile.md`, `portfolio-policy.md`, and
+`risk-limits.yaml`. The first live report completed successfully against all 27 recorded
+positions (`run_20260720T015117Z_c6be`): AUD 105,024.44 total value, complete quote/FX
+provenance, no stale quotes, and an audited immutable output. The mechanical health check
+correctly surfaced cash and individual-stock allocation drift, the emergency-fund floor,
+and four unknown cost bases without guessing values.
+
+All M1 exit criteria are met. **Next: M2 — Research workbench.**
 
 ### 2026-07-20 — M0 complete
 

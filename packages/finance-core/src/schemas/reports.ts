@@ -8,7 +8,6 @@ import { RiskLimits } from "./risk-limits.js";
  */
 
 const reportBase = {
-  schemaVersion: z.literal(1),
   generatedAt: IsoTimestamp,
   /** every calculation in the report must be reproducible from this run */
   runId: RunId,
@@ -39,6 +38,7 @@ export const DisciplineBlock = z
 export const ValuationReport = z
   .object({
     ...reportBase,
+    schemaVersion: z.literal(1),
     reportType: z.literal("valuationReport"),
     symbol: z.string().min(1),
     assumptions: z.array(z.string()).min(1),
@@ -55,6 +55,7 @@ export const ValuationReport = z
 export const PortfolioHealthReport = z
   .object({
     ...reportBase,
+    schemaVersion: z.literal(2),
     reportType: z.literal("portfolioHealthReport"),
     valuationCurrency: CurrencyCode,
     totalValue: z.number().finite(),
@@ -103,6 +104,7 @@ export const PortfolioHealthReport = z
 export const MonitorAlert = z
   .object({
     ...reportBase,
+    schemaVersion: z.literal(1),
     reportType: z.literal("monitorAlert"),
     ruleId: z.string().min(1),
     symbol: z.string().min(1),
@@ -120,6 +122,7 @@ export const MonitorAlert = z
 export const DailyDigest = z
   .object({
     ...reportBase,
+    schemaVersion: z.literal(1),
     reportType: z.literal("dailyDigest"),
     events: z.array(
       z
