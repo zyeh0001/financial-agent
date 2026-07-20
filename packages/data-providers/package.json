@@ -4,7 +4,8 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./src/interfaces.ts"
+    ".": "./src/interfaces.ts",
+    "./yahoo": "./src/yahoo.ts"
   },
   "dependencies": {
     "@financial-agent/finance-core": "*"

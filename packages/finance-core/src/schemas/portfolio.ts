@@ -24,8 +24,12 @@ export const Position = z
     assetType: AssetType,
     bucket: Bucket,
     quantity: Quantity,
-    /** Weighted average cost per unit, inclusive of buy-side fees. */
-    averageCost: Money.nonnegative(),
+    /**
+     * Weighted average cost per unit, inclusive of buy-side fees.
+     * `null` = cost basis unknown (real case: crypto positions, NOW) —
+     * unrealized P&L is then unavailable and reported as a data gap, never guessed.
+     */
+    averageCost: Money.nonnegative().nullable(),
     costCurrency: CurrencyCode,
     notes: z.string().optional(),
   })

@@ -8,7 +8,7 @@ Update this file whenever a milestone (or meaningful chunk of one) lands.
 | Milestone | Status | Date |
 |---|---|---|
 | M0 — Contracts, source of truth, fixtures | ✅ Done | 2026-07-20 |
-| M1 — Portfolio foundation | ⬜ Not started | |
+| M1 — Portfolio foundation | 🟨 In progress | 2026-07-20 |
 | M2 — Research workbench | ⬜ Not started | |
 | M3 — Dashboard integration | ⬜ Not started | |
 | M4 — Monitoring engine | ⬜ Not started | |
@@ -17,6 +17,32 @@ Update this file whenever a milestone (or meaningful chunk of one) lands.
 | Phase 2 — Codex + broker read-only | ⬜ Future | |
 
 ## Log
+
+### 2026-07-20 — M1 implementation in progress
+
+The repository-side portfolio foundation is implemented and passing its checks:
+
+- Parses the canonical `portfolio.md` holdings table and the `finances.md`
+  `cash-snapshot` block; unknown cost bases remain `null` and surface as data gaps.
+- Validates machine-readable `risk-limits.yaml`, including target allocations summing to
+  100%.
+- Fetches timestamped quotes and FX through the Yahoo provider, then calculates portfolio
+  value, allocation, currency exposure, concentration, cost basis, and unrealized P&L via
+  `finance-core`.
+- Produces a schema-validated portfolio health report and audited run record through
+  `npm run health-report`; reports are immutable per run and include the exact position,
+  quote, FX, currency, timestamp, source, and input-hash provenance needed to reproduce
+  their calculations.
+- Fails closed when any quote is unavailable or its currency disagrees with the declared
+  cost currency, or when a canonical holdings row is malformed; a partial portfolio cannot
+  be saved as a complete report.
+
+Automated status: 36 tests passing; TypeScript typecheck passing.
+
+Remaining before M1 can be marked complete: review and split the real Layer A financial
+records into `investor-profile.md`, `portfolio-policy.md`, and `risk-limits.yaml`, then run
+and validate the first live health report. These files represent Charles's financial
+intent and require explicit review before modification (SECURITY §5).
 
 ### 2026-07-20 — M0 complete
 

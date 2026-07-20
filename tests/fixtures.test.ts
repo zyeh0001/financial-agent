@@ -4,6 +4,7 @@ import { join } from "node:path";
 import {
   AnyTransaction,
   TOLERANCES,
+  ledgerFromState,
   processTransactions,
   valuePortfolio,
   type Quote,
@@ -48,6 +49,37 @@ const Fixture = z.object({
     staleQuotes: z.array(z.string()),
     concentrationFlags: z.array(z.string()),
   }),
+});
+
+describe("valuation input safety", () => {
+  it("rejects a quote currency that differs from the declared cost currency", () => {
+    const ledger = ledgerFromState({
+      positions: [
+        { symbol: "VOO", quantity: 1, averageCost: 500, costCurrency: "USD" },
+      ],
+      cash: [{ currency: "AUD", amount: 1_000 }],
+    });
+
+    expect(() =>
+      valuePortfolio({
+        ledger,
+        quotes: {
+          VOO: {
+            symbol: "VOO",
+            price: 700,
+            currency: "AUD",
+            asOf: "2026-07-20T20:00:00Z",
+            source: "test",
+          },
+        },
+        fx: {},
+        fxTimestamp: "2026-07-20T20:00:00Z",
+        valuationCurrency: "AUD",
+        buckets: { VOO: "etf" },
+        now: "2026-07-20T20:00:00Z",
+      })
+    ).toThrow(/currency mismatch for VOO/);
+  });
 });
 
 function loadFixtures() {
@@ -102,7 +134,7 @@ describe("golden fixtures", () => {
         expectClose(actual.value, expectedPos.value, TOLERANCES.money, `${expectedPos.symbol}.value`);
         expectClose(actual.weight, expectedPos.weight, TOLERANCES.weight, `${expectedPos.symbol}.weight`);
         expectClose(
-          actual.unrealizedPnl,
+          actual.unrealizedPnl ?? Number.NaN,
           expectedPos.unrealizedPnl,
           TOLERANCES.money,
           `${expectedPos.symbol}.unrealizedPnl`

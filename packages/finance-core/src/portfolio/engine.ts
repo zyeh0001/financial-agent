@@ -17,8 +17,8 @@ import type { AnyTransaction } from "../schemas/transaction.js";
 export interface Holding {
   symbol: string;
   quantity: number;
-  /** weighted average cost per unit incl. buy fees */
-  averageCost: number;
+  /** weighted average cost per unit incl. buy fees; null = cost basis unknown */
+  averageCost: number | null;
   currency: CurrencyCode;
 }
 
@@ -33,6 +33,38 @@ export interface LedgerState {
 
 function bump(map: Map<CurrencyCode, number>, currency: CurrencyCode, delta: number): void {
   map.set(currency, (map.get(currency) ?? 0) + delta);
+}
+
+/**
+ * Build a ledger directly from a declared portfolio state (Phase 1: parsed
+ * portfolio.md + cash-snapshot) — the no-transaction-history path.
+ */
+export function ledgerFromState(state: {
+  positions: Array<{
+    symbol: string;
+    quantity: number;
+    averageCost: number | null;
+    costCurrency: CurrencyCode;
+  }>;
+  cash: Array<{ currency: CurrencyCode; amount: number }>;
+}): LedgerState {
+  const ledger: LedgerState = {
+    holdings: new Map(),
+    cash: new Map(),
+    realizedPnl: new Map(),
+    dividends: new Map(),
+  };
+  for (const p of state.positions) {
+    if (ledger.holdings.has(p.symbol)) throw new Error(`duplicate position: ${p.symbol}`);
+    ledger.holdings.set(p.symbol, {
+      symbol: p.symbol,
+      quantity: p.quantity,
+      averageCost: p.averageCost,
+      currency: p.costCurrency,
+    });
+  }
+  for (const c of state.cash) bump(ledger.cash, c.currency, c.amount);
+  return ledger;
 }
 
 export function processTransactions(transactions: AnyTransaction[]): LedgerState {
@@ -71,6 +103,9 @@ export function processTransactions(transactions: AnyTransaction[]): LedgerState
           if (existing.currency !== tx.currency) {
             throw new Error(`currency mismatch for ${tx.symbol}: ${existing.currency} vs ${tx.currency}`);
           }
+          if (existing.averageCost === null) {
+            throw new Error(`cannot BUY into ${tx.symbol}: existing cost basis unknown`);
+          }
           const totalQty = existing.quantity + tx.quantity;
           existing.averageCost = (existing.quantity * existing.averageCost + cost) / totalQty;
           existing.quantity = totalQty;
@@ -90,6 +125,9 @@ export function processTransactions(transactions: AnyTransaction[]): LedgerState
         if (!holding) throw new Error(`SELL of unheld symbol: ${tx.symbol}`);
         if (tx.quantity > holding.quantity + 1e-9) {
           throw new Error(`SELL ${tx.quantity} exceeds held ${holding.quantity} for ${tx.symbol}`);
+        }
+        if (holding.averageCost === null) {
+          throw new Error(`cannot SELL ${tx.symbol}: cost basis unknown — record it first`);
         }
         const proceeds = tx.quantity * tx.price - fee;
         bump(state.cash, tx.currency, proceeds);
@@ -134,7 +172,7 @@ export interface ValuedPosition {
   quoteCurrency: CurrencyCode;
   value: number; // in valuation currency
   weight: number; // of total portfolio value
-  unrealizedPnl: number; // in valuation currency
+  unrealizedPnl: number | null; // in valuation currency; null = cost basis unknown
   stale: boolean;
 }
 
@@ -149,6 +187,29 @@ export interface Valuation {
   dividends: number; // valuation currency (current-fx simplification)
   staleQuotes: string[];
   concentrationFlags: string[]; // individual stocks over singleStockMax
+}
+
+/**
+ * Quote age excluding weekend hours (UTC Sat/Sun) — a Friday-close quote read
+ * on Monday morning is fresh, not 60h stale. Approximation: US market weekend
+ * ≈ UTC weekend; exchange holidays are NOT modeled (acceptable false-stale on
+ * holiday Mondays — errs toward caution, never toward false freshness).
+ */
+export function marketAgeHours(asOfMs: number, nowMs: number): number {
+  let weekendMs = 0;
+  const start = new Date(asOfMs);
+  for (
+    let t = Date.UTC(start.getUTCFullYear(), start.getUTCMonth(), start.getUTCDate());
+    t < nowMs;
+    t += 86_400_000
+  ) {
+    const day = new Date(t).getUTCDay();
+    if (day === 6 || day === 0) {
+      const overlap = Math.min(t + 86_400_000, nowMs) - Math.max(t, asOfMs);
+      if (overlap > 0) weekendMs += overlap;
+    }
+  }
+  return (nowMs - asOfMs - weekendMs) / 3_600_000;
 }
 
 export function convert(
@@ -186,18 +247,25 @@ export function valuePortfolio(input: ValuationInput): Valuation {
   for (const holding of ledger.holdings.values()) {
     const quote = quotes[holding.symbol];
     if (!quote) throw new Error(`missing quote for ${holding.symbol}`);
-    const ageHours = (nowMs - Date.parse(quote.asOf)) / 3_600_000;
-    const stale = ageHours > staleAfterHours;
+    if (quote.currency !== holding.currency) {
+      throw new Error(
+        `currency mismatch for ${holding.symbol}: cost basis is ${holding.currency}, quote is ${quote.currency}`
+      );
+    }
+    const stale = marketAgeHours(Date.parse(quote.asOf), nowMs) > staleAfterHours;
     if (stale) staleQuotes.push(holding.symbol);
 
     const nativeValue = holding.quantity * quote.price;
     const value = convert(nativeValue, quote.currency, valuationCurrency, fx);
-    const unrealizedPnl = convert(
-      holding.quantity * (quote.price - holding.averageCost),
-      quote.currency,
-      valuationCurrency,
-      fx
-    );
+    const unrealizedPnl =
+      holding.averageCost === null
+        ? null
+        : convert(
+            holding.quantity * (quote.price - holding.averageCost),
+            quote.currency,
+            valuationCurrency,
+            fx
+          );
     positions.push({
       symbol: holding.symbol,
       quantity: holding.quantity,

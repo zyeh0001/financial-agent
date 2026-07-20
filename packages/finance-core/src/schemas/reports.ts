@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { CurrencyCode, IsoTimestamp, RunId } from "./common.js";
+import { RiskLimits } from "./risk-limits.js";
 
 /**
  * Report-type-specific schemas (ARCHITECTURE §10). A stale-data alert does not
@@ -57,10 +58,43 @@ export const PortfolioHealthReport = z
     reportType: z.literal("portfolioHealthReport"),
     valuationCurrency: CurrencyCode,
     totalValue: z.number().finite(),
+    positions: z.array(
+      z
+        .object({
+          symbol: z.string().min(1),
+          bucket: z.enum(["individual", "etf", "crypto"]),
+          quantity: z.number().finite().nonnegative(),
+          averageCost: z.number().finite().nonnegative().nullable(),
+          costCurrency: CurrencyCode,
+          price: z.number().finite().positive(),
+          quoteCurrency: CurrencyCode,
+          quoteAsOf: IsoTimestamp,
+          source: z.string().min(1),
+          value: z.number().finite(),
+          weight: z.number().finite(),
+          unrealizedPnl: z.number().finite().nullable(),
+        })
+        .strict()
+    ),
+    cash: z.record(CurrencyCode, z.number().finite()),
+    fxRates: z.array(
+      z
+        .object({
+          pair: z.string().regex(/^[A-Z]{6}$/),
+          rate: z.number().finite().positive(),
+          asOf: IsoTimestamp,
+          source: z.string().min(1),
+        })
+        .strict()
+    ),
+    riskLimits: RiskLimits,
+    healthContext: z.object({ emergencyFund: z.number().finite().nonnegative() }).strict(),
     bucketWeights: z.record(z.string(), z.number()),
     concentrationFlags: z.array(z.string()),
     currencyExposure: z.record(z.string(), z.number()),
     staleQuotes: z.array(z.string()),
+    /** missing quotes, unknown cost bases — stated, never silently skipped */
+    dataGaps: z.array(z.string()),
     policyBreaches: z.array(z.string()),
     suggestedActions: z.array(z.string()),
   })
