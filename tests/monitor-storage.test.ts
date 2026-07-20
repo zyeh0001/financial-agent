@@ -2,7 +2,6 @@ import { describe, expect, it } from "vitest";
 import { mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { spawnSync } from "node:child_process";
 import { claimAlertEvent, claimPendingAlertDeliveries, markAlertDelivery, readPendingAlertEvents } from "@financial-agent/storage";
 
 const alert = {
@@ -72,7 +71,11 @@ describe("monitor alert storage", () => {
 
   it("recovers an ownership lock left by a dead process", async () => {
     const path = join(mkdtempSync(join(tmpdir(), "fa-monitor-")), "alerts.jsonl");
-    const deadOwner = spawnSync("/usr/bin/true").pid;
+    let deadOwner = 99_999;
+    while (deadOwner > 90_000) {
+      try { process.kill(deadOwner, 0); deadOwner -= 1; }
+      catch (error: unknown) { if ((error as NodeJS.ErrnoException).code === "ESRCH") break; throw error; }
+    }
     writeFileSync(`${path}.lock`, `${deadOwner}\n`);
     await expect(claimAlertEvent(path, alert, 60 * 60_000)).resolves.toMatchObject({ created: true });
   });

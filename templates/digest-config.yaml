@@ -1,0 +1,16 @@
+schemaVersion: 1
+secUserAgent: Financial Agent your-email@example.com
+macroTopics:
+  - rba
+  - interest rate
+  - inflation
+  - aud
+lookbackDays:
+  daily: 2
+  weekly: 8
+budget:
+  maxEvents: 12
+  maxInputChars: 24000
+  maxOutputChars: 6000
+# Optional. API key comes from ANTHROPIC_API_KEY or Keychain service financial-agent-anthropic.
+# summarizer: { provider: anthropic, model: your-approved-model-id, maxTokens: 1200 }

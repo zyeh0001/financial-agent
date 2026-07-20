@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0"><dict>
+  <key>Label</key><string>com.financial-agent.digest.__CADENCE__</string>
+  <key>ProgramArguments</key><array>
+    <string>__NODE_PATH__</string><string>__REPO_PATH__/node_modules/tsx/dist/cli.mjs</string>
+    <string>__REPO_PATH__/scripts/digest.ts</string><string>--__CADENCE__</string>
+  </array>
+  <key>WorkingDirectory</key><string>__REPO_PATH__</string>
+  <key>EnvironmentVariables</key><dict><key>INVESTMENT_DIR</key><string>__INVESTMENT_DIR__</string></dict>
+  <key>StartCalendarInterval</key><dict>__WEEKDAY_ENTRY__<key>Hour</key><integer>7</integer><key>Minute</key><integer>0</integer></dict>
+  <key>StandardOutPath</key><string>__LOG_DIR__/digest.__CADENCE__.stdout.log</string>
+  <key>StandardErrorPath</key><string>__LOG_DIR__/digest.__CADENCE__.stderr.log</string>
+</dict></plist>

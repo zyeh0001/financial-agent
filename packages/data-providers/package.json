@@ -6,7 +6,8 @@
   "exports": {
     ".": "./src/interfaces.ts",
     "./yahoo": "./src/yahoo.ts",
-    "./sec-edgar": "./src/sec-edgar.ts"
+    "./sec-edgar": "./src/sec-edgar.ts",
+    "./finnhub-news": "./src/finnhub-news.ts"
   },
   "dependencies": {
     "@financial-agent/finance-core": "*",

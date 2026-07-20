@@ -11,6 +11,8 @@
     "health-report": "tsx scripts/health-report.ts",
     "monitor": "tsx scripts/monitor.ts",
     "monitor:launchd": "tsx scripts/render-monitor-launchd.ts",
+    "digest": "tsx scripts/digest.ts",
+    "digest:launchd": "tsx scripts/render-digest-launchd.ts",
     "journal": "tsx scripts/journal.ts",
     "valuation": "tsx scripts/valuation.ts",
     "options-payoff": "tsx scripts/options-payoff.ts",

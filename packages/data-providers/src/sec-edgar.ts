@@ -36,6 +36,7 @@ export class SecEdgarProvider implements FilingsProvider {
   readonly name = "sec-edgar";
   private readonly userAgent: string;
   private readonly fetchImpl: typeof fetch;
+  private tickerMap: Promise<z.infer<typeof TickerMap>> | undefined;
 
   constructor(options: SecEdgarProviderOptions) {
     const userAgent = options.userAgent.trim();
@@ -58,6 +59,11 @@ export class SecEdgarProvider implements FilingsProvider {
     return response.json();
   }
 
+  private loadTickerMap() {
+    this.tickerMap ??= this.fetchJson("https://www.sec.gov/files/company_tickers.json").then((value) => TickerMap.parse(value));
+    return this.tickerMap;
+  }
+
   async searchFilings(symbolCandidate: string, formTypes?: string[]): Promise<FilingRef[]> {
     const symbol = symbolCandidate.trim().toUpperCase();
     if (!/^[A-Z0-9.-]{1,20}$/.test(symbol)) throw new Error(`invalid SEC ticker: ${symbolCandidate}`);
@@ -66,9 +72,7 @@ export class SecEdgarProvider implements FilingsProvider {
       throw new Error("invalid SEC form type");
     }
 
-    const tickerMap = TickerMap.parse(
-      await this.fetchJson("https://www.sec.gov/files/company_tickers.json")
-    );
+    const tickerMap = await this.loadTickerMap();
     const company = Object.values(tickerMap).find(
       (candidate) => candidate.ticker.toUpperCase() === symbol
     );

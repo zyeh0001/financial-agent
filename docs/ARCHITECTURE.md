@@ -303,3 +303,20 @@ notification.
 The dashboard event adapter is the durable `alert-created` record itself; macOS Notification
 Center is the default human adapter. `npm run monitor:launchd -- --output <path>` renders the
 15-minute launchd plist with absolute paths. Rendering does not load or activate the agent.
+
+**M5 digest flow.** `npm run digest` collects SEC filings and, when configured, Finnhub
+company/general news for held and watched symbols. The finance-core digest module filters
+against that explicit universe and configured macro topics, removes already-reported event
+IDs, ranks original/official/secondary sources, and classifies each event as requiring
+thesis review or context only without claiming that a routine filing changed the thesis.
+Facts, publication timestamps, and source links are immutable deterministic output;
+interpretation and summary occupy separate nullable fields.
+
+The optional Anthropic summarizer adapter sits behind a character/event/token budget and
+must map every summary claim to supplied event IDs. It is not invoked
+when no relevant event exists, and the default scheduled CLI makes no model call at all.
+Finnhub credentials come from the trusted process environment or macOS Keychain service
+`financial-agent-finnhub`; Anthropic uses the equivalent `financial-agent-anthropic` service.
+Keys are never written into plist files, reports, or logs.
+Validated digest reports are immutable under `data/digests/` and provide the seen-event set
+for subsequent daily/weekly runs.

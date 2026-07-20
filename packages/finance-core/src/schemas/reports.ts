@@ -402,26 +402,71 @@ export const MonitorAlert = z
   })
   .strict();
 
+export const DigestBudgetLimits = z.object({
+  maxEvents: z.number().int().positive(), maxInputChars: z.number().int().positive(), maxOutputChars: z.number().int().positive(),
+}).strict();
+
+export const DailyDigestV1 = z.object({
+  ...reportBase, schemaVersion: z.literal(1), reportType: z.literal("dailyDigest"),
+  events: z.array(z.object({ symbol: z.string().nullable(), whatChanged: z.string().min(1), whyItMatters: z.string().min(1), holdingsAffected: z.array(z.string()), interpretation: z.string().optional(), source: z.string().min(1) }).strict()),
+  noActionNeeded: z.boolean(),
+}).strict();
+
 export const DailyDigest = z
   .object({
     ...reportBase,
-    schemaVersion: z.literal(1),
+    schemaVersion: z.literal(2),
     reportType: z.literal("dailyDigest"),
+    cadence: z.enum(["daily", "weekly"]),
     events: z.array(
       z
         .object({
-          symbol: z.string().nullable(),
-          whatChanged: z.string().min(1),
-          whyItMatters: z.string().min(1),
+          eventId: z.string().min(1),
+          publishedAt: IsoTimestamp,
+          scope: z.enum(["asset", "macro"]),
+          symbols: z.array(z.string().min(1)),
+          headline: z.string().min(1),
+          facts: z.string().min(1),
+          thesisImpact: z.enum(["review-required", "context-only"]),
+          classificationReason: z.string().min(1),
           holdingsAffected: z.array(z.string()),
-          interpretation: z.string().optional(),
-          source: z.string().min(1),
+          interpretation: z.string().min(1).nullable(),
+          source: z.object({ publisher: z.string().min(1), url: z.string().url(), rank: z.enum(["original", "official", "secondary"]) }).strict(),
         })
         .strict()
     ),
+    summary: z.string().min(1).nullable(),
+    summaryClaims: z.array(z.object({ text: z.string().min(1), eventIds: z.array(z.string().min(1)).min(1) }).strict()),
+    budget: z.object({
+      ...DigestBudgetLimits.shape,
+      eventsUsed: z.number().int().nonnegative(),
+      inputChars: z.number().int().nonnegative(),
+      outputChars: z.number().int().nonnegative(),
+      maxTokens: z.number().int().positive().nullable(),
+      inputTokens: z.number().int().nonnegative().nullable(),
+      outputTokens: z.number().int().nonnegative().nullable(),
+    }).strict(),
     noActionNeeded: z.boolean(),
   })
-  .strict();
+  .strict()
+  .superRefine((digest, context) => {
+    if ((!digest.events.some((event) => event.thesisImpact === "review-required")) !== digest.noActionNeeded) {
+      context.addIssue({ code: z.ZodIssueCode.custom, path: ["noActionNeeded"], message: "noActionNeeded must reflect whether thesis review is required" });
+    }
+    if (digest.budget.outputChars > digest.budget.maxOutputChars || digest.budget.inputChars > digest.budget.maxInputChars) {
+      context.addIssue({ code: z.ZodIssueCode.custom, path: ["budget"], message: "digest exceeded configured budget" });
+    }
+    if (digest.budget.maxTokens !== null && digest.budget.outputTokens !== null && digest.budget.outputTokens > digest.budget.maxTokens) {
+      context.addIssue({ code: z.ZodIssueCode.custom, path: ["budget", "outputTokens"], message: "digest exceeded configured token budget" });
+    }
+    const eventIds = new Set(digest.events.map((event) => event.eventId));
+    for (const claim of digest.summaryClaims) if (claim.eventIds.some((eventId) => !eventIds.has(eventId))) {
+      context.addIssue({ code: z.ZodIssueCode.custom, path: ["summaryClaims"], message: "summary claim references an unknown event" });
+    }
+    if ((digest.summary === null) !== (digest.summaryClaims.length === 0)) {
+      context.addIssue({ code: z.ZodIssueCode.custom, path: ["summaryClaims"], message: "summaries require claim-to-event mappings" });
+    }
+  });
 
 export const Report = z.union([
   StockResearchReport,
@@ -431,6 +476,7 @@ export const Report = z.union([
   PortfolioHealthReport,
   MonitorAlert,
   DailyDigest,
+  DailyDigestV1,
 ]);
 export type Report = z.infer<typeof Report>;
 
@@ -452,7 +498,7 @@ const reportSchemas: Record<ReportType, z.ZodTypeAny> = {
   valuationReport: ValuationReport,
   portfolioHealthReport: PortfolioHealthReport,
   monitorAlert: MonitorAlert,
-  dailyDigest: DailyDigest,
+  dailyDigest: z.union([DailyDigest, DailyDigestV1]),
 };
 
 export type ReportValidationResult =

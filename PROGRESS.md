@@ -12,11 +12,34 @@ Update this file whenever a milestone (or meaningful chunk of one) lands.
 | M2 — Research workbench | ✅ Done | 2026-07-20 |
 | M3 — Dashboard integration | ✅ Done | 2026-07-20 |
 | M4 — Monitoring engine | ✅ Done | 2026-07-20 |
-| M5 — Digest & proactive research | ⬜ Not started | |
+| M5 — Digest & proactive research | ✅ Done | 2026-07-20 |
 | M6 — Subagent quality pipeline (optional) | ⬜ Not started | |
 | Phase 2 — Codex + broker read-only | ⬜ Future | |
 
 ## Log
+
+### 2026-07-20 — M5 complete
+
+The proactive research digest is implemented end to end:
+
+- **Relevant by construction** — normalized events are admitted only for held/watched
+  symbols or explicitly configured macro topics. Previously reported event IDs are excluded.
+- **Trustworthy ordering and framing** — SEC original filings rank ahead of official and
+  secondary coverage; every event links its source and timestamp, carries a deterministic
+  thesis-review classification with an explicit reason, and keeps facts separate from
+  nullable interpretation without treating routine filing metadata as thesis change.
+- **Hard quiet-path guarantee** — the optional summarizer seam is crossed only for unseen
+  relevant events that fit the configured event/input budget. Empty runs create an explicit
+  no-action digest with no model call; context-only updates also default to no action. Every
+  generated summary claim maps to event IDs and output usage is validated against its budget.
+- **Scheduled operation** — daily/weekly CLI runs persist immutable v2 reports and complete
+  audit records. SEC ticker metadata is cached per run; optional Finnhub news uses the trusted
+  environment or macOS Keychain. Render-only launchd assets do not install themselves.
+
+M5 exit criteria are covered by behavior tests for universe/macro relevance, original-first
+ranking, seen-event dedup, fact/interpretation separation, the zero-LLM quiet path, budgeted
+summarization, provider normalization, immutable storage, and audited CLI failure handling.
+**Next: M6 — optional subagent quality pipeline.**
 
 ### 2026-07-20 — M4 complete
 

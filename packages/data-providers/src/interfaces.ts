@@ -57,6 +57,23 @@ export interface ProviderFundamentals {
   source: string;
 }
 
+export interface ProviderNewsEvent {
+  id: string;
+  publishedAt: string;
+  headline: string;
+  summary: string;
+  publisher: string;
+  url: string;
+  symbols: string[];
+  category: "company" | "general";
+}
+
+export interface NewsProvider {
+  readonly name: string;
+  getCompanyNews(symbol: string, from: string, to: string): Promise<ProviderNewsEvent[]>;
+  getGeneralNews(): Promise<ProviderNewsEvent[]>;
+}
+
 export interface ProviderFxRate {
   pair: string; // e.g. "USDAUD"
   rate: number;

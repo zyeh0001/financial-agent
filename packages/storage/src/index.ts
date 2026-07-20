@@ -3,6 +3,7 @@ export * from "./journal.js";
 export * from "./dashboard.js";
 export * from "./monitoring.js";
 export * from "./jsonl.js";
+export * from "./digest.js";
 
 /**
  * Storage integrity primitives (ARCHITECTURE §5). Layer B lives under an

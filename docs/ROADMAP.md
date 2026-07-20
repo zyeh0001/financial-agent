@@ -96,8 +96,8 @@ arithmetic discrepancies, better source coverage.
 
 - **Notification channel default** — decided at M4: macOS Notification Center plus durable
   dashboard-readable `alert-created` events. Slack/email remain deferred until requested.
-- **Market-data/news provider for M5** — Yahoo remains the M1 quote/FX provider; SEC EDGAR
-  is the decided original-filings provider. Revisit Finnhub/news only when M5 needs it.
+- **Market-data/news provider for M5** — decided: SEC EDGAR for original filings plus optional
+  Finnhub company/general news (free personal tier); Yahoo remains quote/FX only.
 - **SQLite graduation** — decided at M4: keep Layer B in locked JSONL/YAML; current monitoring
   read patterns do not justify SQLite.
 - **Execution-skill isolation** — moot for Phase 1 (no execution skill exists); re-raise at
@@ -114,4 +114,5 @@ arithmetic discrepancies, better source coverage.
 | 2026-07-20 | M2 filings decision: use SEC EDGAR for original US filings through the official submissions API and archive; keep Yahoo for current quote/FX, defer any news-provider expansion to M5 |
 | 2026-07-20 | M3 dashboard decision: consume validated health-report/snapshot outputs through one storage read model; reload is read-only; snapshot v2 records report-run + portfolio-hash provenance; freshness and completeness are independent visible states |
 | 2026-07-20 | M4 monitoring decision: 15-minute launchd cycle; 24-hour configurable per-rule dedup; durable JSONL creation/delivery events; macOS + dashboard-event default; bounded notification retries; partial provider failures audited after unaffected work; no SQLite or LLM |
+| 2026-07-20 | M5 digest decision: SEC filings plus optional Finnhub news; held/watched and explicit-macro relevance only; original-first ranking; deterministic thesis-impact classification; immutable v2 digest facts separate from nullable interpretation; optional character/event-budgeted summarizer with a hard zero-call empty path |
 | — | Claude "finance" plugin rejected (corporate FP&A domain, wrong fit) |

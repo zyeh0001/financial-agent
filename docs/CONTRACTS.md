@@ -155,7 +155,23 @@ provider, but it does not parse or value the portfolio and exposes no data-write
 - Provider failures are isolated per symbol/input, recorded in `runs.jsonl`, and cause a
   non-zero CLI exit after unaffected evaluation and delivery work completes. No LLM is used.
 
-## 11. M0 exit criteria — status
+## 11. Digest contracts (M5)
+
+- `ResearchEvent` is the normalized provider event: immutable ID, publication timestamp,
+  asset/macro scope, symbols/topics, factual text, and a linked ranked source.
+- `buildDigestCandidate` is the deterministic relevance seam. Only held/watched symbols or
+  explicitly configured macro topics survive; seen IDs are excluded and original sources
+  sort before official and secondary coverage.
+- `DailyDigest` v2 keeps `facts` separate from nullable `interpretation`, records thesis-impact
+  classification/reason, publication timestamps, holdings affected, cadence, source URLs,
+  claim-to-event mappings, and exact configured/consumed summary budgets. V1 remains readable
+  through a stable legacy-event migration ID.
+- `runDigestCycle` calls a summarizer only when relevant events fit the input budget. Empty
+  candidates produce a validated no-action report with `llmCalled: false` and `model: null`.
+- SEC EDGAR is the original-source adapter. Finnhub company/general news is optional; its key
+  is accepted only through the trusted environment or macOS Keychain.
+
+## 12. M0 exit criteria — status
 
 - [x] Schemas versioned (`schemaVersion` on every record)
 - [x] Golden fixtures pass against finance-core (23 tests: fixtures + schema guards + storage)
