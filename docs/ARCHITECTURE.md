@@ -130,22 +130,33 @@ edits, sync):
 - Sync-conflict detection (Obsidian/git conflict copies)
 - Backup/restore; audit logs; checksums where useful
 
-**Snapshot schema** (daily at US market close — reporting only, the engine reads live data):
+**Snapshot schema v2** (daily history — reporting only, the engine reads live data). V1 is
+still accepted for migration; new records use real report/hash provenance rather than an
+invented portfolio version absent from the Phase-1 Markdown source:
 
 ```json
 {
-  "schemaVersion": 1,
-  "eventId": "snap_20260720_us_close",
-  "capturedAt": "2026-07-20T20:05:00-04:00",
-  "marketSession": "US_CLOSE",
+  "schemaVersion": 2,
+  "eventId": "snap_20260720_manual",
+  "capturedAt": "2026-07-20T03:17:36Z",
+  "marketSession": "MANUAL",
   "valuationCurrency": "AUD",
-  "fxTimestamp": "2026-07-20T20:00:00-04:00",
-  "sourcePortfolioVersion": "portfolio_20260720_001",
+  "fxTimestamp": "2026-07-17T20:00:00Z",
+  "sourceReportRunId": "run_20260720T031723Z_0c23",
+  "sourcePortfolioHash": "sha256:<64 lowercase hex characters>",
   "totalValue": 42310,
   "byBucket": { "crypto": 0.06, "etf": 0.48, "cash": 0.31, "individual": 0.15 },
   "status": "complete"
 }
 ```
+
+`health-report` creates at most one immutable snapshot per day/session. The dashboard reads
+the newest validated health report plus sorted snapshot files through the storage package's
+single read-model interface. It never writes, never silently falls back from a malformed
+newest report, and presents freshness and completeness as separate dimensions. Portfolio
+math stays in finance-core; the dashboard server is a thin read/watchlist/OHLC adapter.
+History is charted only when its valuation currency matches the current report, and any
+sync-conflict artifact blocks selection until a human resolves it.
 
 **Run/audit log** (`runs.jsonl`): every automated run records run ID, trigger, start/finish,
 input versions, provider calls, validation results, outputs, error state, and model ID where

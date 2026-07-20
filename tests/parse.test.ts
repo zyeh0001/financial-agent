@@ -5,6 +5,7 @@ import {
   ledgerFromState,
   parseCashSnapshot,
   parsePortfolioMd,
+  parseWatchlistMd,
   valuePortfolio,
   TOLERANCES,
   type Quote,
@@ -125,6 +126,37 @@ describe("portfolio.md parser", () => {
     expect(() => parseCashSnapshot(SAMPLE_FINANCES_MD.replace("currency: AUD", "currency: EUR"))).toThrow(
       /currency/
     );
+  });
+});
+
+describe("watchlist.md parser", () => {
+  it("parses grouped watchlist tables into the shared domain shape", () => {
+    const markdown = `# Watchlist
+
+## Large Tech
+
+| 代号 | 公司 | 板块 | 加入日期 | 关注理由 | 参考价(加入时) | 现价(上次查) | 合理买入价 | 来源 |
+|---|---|---|---|---|---:|---:|---|---|
+| MSFT | Microsoft | Software | 2026-07-01 | Durable cash flow | $500 | — | Below 450 | filing |
+`;
+
+    expect(parseWatchlistMd(markdown)).toEqual([
+      {
+        name: "Large Tech",
+        items: [
+          {
+            symbol: "MSFT",
+            name: "Microsoft",
+            sector: "Software",
+            dateAdded: "2026-07-01",
+            reason: "Durable cash flow",
+            referencePrice: 500,
+            reasonableBuy: "Below 450",
+            source: "filing",
+          },
+        ],
+      },
+    ]);
   });
 });
 

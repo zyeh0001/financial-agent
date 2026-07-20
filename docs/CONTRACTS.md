@@ -1,6 +1,6 @@
 # Financial Agent — Contracts
 
-**Status:** Current through M2 (2026-07-20) · Schemas are code: [`packages/finance-core/src/schemas/`](../packages/finance-core/src/schemas/) is normative; this doc is the map.
+**Status:** Current through M3 (2026-07-20) · Schemas are code: [`packages/finance-core/src/schemas/`](../packages/finance-core/src/schemas/) is normative; this doc is the map.
 
 ## 1. Record schemas (zod, versioned)
 
@@ -8,7 +8,7 @@
 |---|---|---|
 | Portfolio state | `PortfolioState` | reconciliation metadata reserved now; Phase 1 `source: manual_chat_crud`, `status: unreconciled` (flip at Phase 2 broker import — ARCHITECTURE §4) |
 | Transactions | `AnyTransaction` | BUY / SELL / DIVIDEND / DEPOSIT / WITHDRAWAL / FEE / FX_CONVERT. Records of what happened — **no order/lifecycle states exist** |
-| Snapshot | `Snapshot` | daily US close; feeds reporting only |
+| Snapshot | `Snapshot` | v2 links each immutable daily history point to its health-report run and portfolio input hash; feeds reporting only (v1 remains readable) |
 | Alert rule | `AlertRule`, `RulesFile` | alert-only; `.strict()` rejects `mode`/`action`/any execution shape at parse time (tested) |
 | Journal | `JournalEntry`, `Postmortem` | risks + invalidation conditions are required, not optional |
 | Run/audit | `RunRecord` | every automated run; model ID recorded iff an LLM ran |
@@ -34,7 +34,11 @@ All records carry `schemaVersion` (per-type, independent bumps). Currency change
 - `buildStockResearchReport(request) → StockResearchReport` — derives report scenario and
   discipline numbers from a parsed DCF record; rejects misordered bear/base/bull outputs.
 - `health-report` remains the allocation calculation entry point: it computes current
-  weights/drift via finance-core and records the run rather than duplicating allocation math.
+  weights/drift via finance-core, records the run, and idempotently captures the first daily
+  snapshot rather than duplicating allocation math.
+- `createPortfolioSnapshot(report, portfolioHash)` derives snapshot values only from a
+  validated health report. `calculatePercentChange(reference, current)` keeps the remaining
+  watchlist display arithmetic out of the dashboard repository.
 - Documented Phase-1 simplifications: average-cost basis (not lot-level); realized P&L and
   dividends converted at current fx, not transaction-time fx. Both revisit at Phase 2
   broker import.
@@ -82,7 +86,7 @@ Read tools are freely callable; **write tools require explicit user confirmation
 
 ## 6. Provider interfaces
 
-`MarketDataProvider` · `FxProvider` · `FilingsProvider`
+`MarketDataProvider` · `HistoryProvider` · `FxProvider` · `FilingsProvider`
 ([`packages/data-providers/src/interfaces.ts`](../packages/data-providers/src/interfaces.ts)).
 Every result carries source + timestamp + currency + delayed status; missing metadata is a
 hard fail; provider output is untrusted input (SECURITY §3).
@@ -96,7 +100,9 @@ callers must remain below the SEC's 10 requests/second ceiling.
 
 `atomicWriteFile` (tmp+rename) · `atomicCreateFile` (immutable create) · `appendJsonl` ·
 `readJsonl` (recovers a malformed final line, throws on mid-file corruption) ·
-`detectSyncConflicts` (Obsidian/git artifacts) · validated Markdown journal
+`detectSyncConflicts` (Obsidian/git artifacts) · `createDailySnapshotFile` (immutable,
+idempotent daily capture) · `loadDashboardReadModel` (validated current report, sorted
+history, independent freshness/completeness, provenance, fail-closed errors) · validated Markdown journal
 create/search with linked postmortems
 ([`packages/storage/src/index.ts`](../packages/storage/src/index.ts)). Conflict resolution
 path: ARCHITECTURE §4–5.
@@ -117,7 +123,20 @@ path: ARCHITECTURE §4–5.
   creation. Write subcommands fail unless the orchestration layer supplies `--confirmed`
   after explicit confirmation in chat; storage then validates links and sync-conflict state.
 
-## 9. M0 exit criteria — status
+## 9. Dashboard read contract (M3)
+
+The dashboard consumes one `loadDashboardReadModel({ dataDirectory })` interface. It returns
+the latest validated `PortfolioHealthReport`, sorted `Snapshot[]`, aggregate status,
+independent freshness/completeness, issues, and report filename/run/source timestamps. The
+newest malformed report is an error; the loader never silently falls back to an older value.
+Friday-close age uses finance-core's weekend-aware `marketAgeHours` rule. Snapshot points
+whose valuation currency differs from the current report are excluded and surfaced as an
+error; sync-conflict artifacts in report or snapshot storage also fail the read explicitly.
+
+The sibling dashboard may enrich the watchlist and serve OHLC through the shared Yahoo
+provider, but it does not parse or value the portfolio and exposes no data-write endpoint.
+
+## 10. M0 exit criteria — status
 
 - [x] Schemas versioned (`schemaVersion` on every record)
 - [x] Golden fixtures pass against finance-core (23 tests: fixtures + schema guards + storage)

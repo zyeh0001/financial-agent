@@ -19,6 +19,7 @@ import {
   RiskLimits,
   RunRecord,
   assessHealth,
+  createPortfolioSnapshot,
   ledgerFromState,
   makeRunId,
   parseCashSnapshot,
@@ -29,7 +30,7 @@ import {
 } from "@financial-agent/finance-core";
 import { YahooProvider } from "@financial-agent/data-providers/yahoo";
 import type { ProviderFxRate } from "@financial-agent/data-providers";
-import { appendJsonl, atomicWriteFile, detectSyncConflicts } from "@financial-agent/storage";
+import { appendJsonl, atomicWriteFile, createDailySnapshotFile, detectSyncConflicts } from "@financial-agent/storage";
 
 const INVESTMENT_DIR =
   process.env["INVESTMENT_DIR"] ?? join(homedir(), "Documents/notes/Charles/Investment");
@@ -57,6 +58,7 @@ async function main() {
     portfolioMarkdown = readFileSync(portfolioPath, "utf8");
     financesMarkdown = readFileSync(financesPath, "utf8");
     limitsYaml = readFileSync(limitsPath, "utf8");
+    const portfolioHash = `sha256:${createHash("sha256").update(portfolioMarkdown).digest("hex")}`;
     const { positions, warnings } = parsePortfolioMd(portfolioMarkdown);
     const cashSnapshot = parseCashSnapshot(financesMarkdown);
     const limits = RiskLimits.parse(
@@ -187,6 +189,18 @@ async function main() {
     const reportPath = join(DATA_DIR, "reports", `health-${now.slice(0, 10)}-${runId}.json`);
     await atomicWriteFile(reportPath, JSON.stringify(report, null, 2));
     outputs.push(reportPath);
+    const snapshot = createPortfolioSnapshot({
+      report,
+      sourcePortfolioHash: portfolioHash,
+      marketSession: "MANUAL",
+    });
+    const snapshotResult = await createDailySnapshotFile(DATA_DIR, snapshot);
+    if (snapshotResult.created) outputs.push(snapshotResult.path);
+    validationResults.push({
+      check: "daily-snapshot",
+      ok: true,
+      detail: snapshotResult.created ? snapshot.eventId : `${snapshot.eventId} already captured`,
+    });
 
     // ---- Human summary -------------------------------------------------------
     if (process.argv.includes("--json")) {

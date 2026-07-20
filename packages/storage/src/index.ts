@@ -2,6 +2,7 @@ import { promises as fs } from "node:fs";
 
 export * from "./files.js";
 export * from "./journal.js";
+export * from "./dashboard.js";
 
 /**
  * Storage integrity primitives (ARCHITECTURE §5). Layer B lives under an

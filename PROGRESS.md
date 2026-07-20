@@ -10,13 +10,44 @@ Update this file whenever a milestone (or meaningful chunk of one) lands.
 | M0 — Contracts, source of truth, fixtures | ✅ Done | 2026-07-20 |
 | M1 — Portfolio foundation | ✅ Done | 2026-07-20 |
 | M2 — Research workbench | ✅ Done | 2026-07-20 |
-| M3 — Dashboard integration | ⬜ Not started | |
+| M3 — Dashboard integration | ✅ Done | 2026-07-20 |
 | M4 — Monitoring engine | ⬜ Not started | |
 | M5 — Digest & proactive research | ⬜ Not started | |
 | M6 — Subagent quality pipeline (optional) | ⬜ Not started | |
 | Phase 2 — Codex + broker read-only | ⬜ Future | |
 
 ## Log
+
+### 2026-07-20 — M3 complete
+
+The existing dashboard is now a read-only presentation layer over the agent's validated
+outputs:
+
+- **One read-model seam** — `loadDashboardReadModel` selects the newest health report,
+  validates it without fallback, loads sorted snapshot history, and returns report-file,
+  run-ID, source, generated-at, and data-as-of provenance. Freshness and completeness are
+  independent; corrupt, unavailable, stale, and incomplete states remain visible.
+- **Immutable history** — `health-report` now derives snapshot v2 records from the validated
+  report, links them to the source run and exact portfolio SHA-256 input, and idempotently
+  keeps the first snapshot per day/session. V1 remains readable.
+- **No dashboard financial engine** — the sibling dashboard no longer parses the portfolio
+  or cash snapshot and no longer calculates total value, P&L, allocation, FX, or portfolio
+  weights. The legacy `server/yahoo.ts`, `server/parse.ts`, `server/finances.ts`, bundled
+  writer skill, installer, and data templates were retired. Watchlist parsing/change math
+  and Yahoo quote/OHLC access use the shared agent packages.
+- **Visible trust state** — the UI shows run/file/source/timestamp provenance, independent
+  current/stale and complete/incomplete states, item-level quote sources/errors, finance-core
+  findings, and a net-worth trend chart from immutable snapshots whose tooltips retain the
+  report-run and portfolio-hash provenance. Reload only re-reads data. Mixed-currency history
+  and sync-conflict artifacts fail visibly instead of being charted or silently selected.
+
+Automated status: 68 agent tests across 13 files plus 2 dashboard tests pass;
+both TypeScript builds and the dashboard production bundle pass; both dependency audits
+report zero vulnerabilities. A live read-only API smoke test returned all 27 positions and
+two watchlist groups. Health run `run_20260720T031723Z_0c23` created the first real snapshot,
+`snap_20260720_manual`, without changing holdings, policy, limits, or journal records.
+
+All M3 exit criteria are met. **Next: M4 — Monitoring engine.**
 
 ### 2026-07-20 — M2 complete
 

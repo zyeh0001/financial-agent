@@ -1,5 +1,13 @@
 import { CurrencyCode, type CurrencyCode as CurrencyCodeType } from "@financial-agent/finance-core";
-import type { FxProvider, MarketDataProvider, ProviderFundamentals, ProviderFxRate, ProviderQuote } from "./interfaces.js";
+import type {
+  FxProvider,
+  HistoryProvider,
+  MarketDataProvider,
+  ProviderFundamentals,
+  ProviderFxRate,
+  ProviderHistory,
+  ProviderQuote,
+} from "./interfaces.js";
 
 /**
  * Yahoo Finance provider (free chart endpoint — same source the dashboard and
@@ -15,19 +23,43 @@ interface ChartMeta {
   regularMarketPrice?: number;
   currency?: string;
   regularMarketTime?: number; // epoch seconds
+  longName?: string;
+  shortName?: string;
+  chartPreviousClose?: number;
+  previousClose?: number;
+  fiftyTwoWeekLow?: number;
+  fiftyTwoWeekHigh?: number;
 }
 
-async function fetchMeta(symbol: string): Promise<ChartMeta> {
-  const res = await fetch(`${BASE}/${encodeURIComponent(symbol)}?interval=1d&range=1d`, {
+interface YahooChartResult {
+  meta?: ChartMeta;
+  timestamp?: number[];
+  indicators?: {
+    quote?: Array<{
+      open?: Array<number | null>;
+      high?: Array<number | null>;
+      low?: Array<number | null>;
+      close?: Array<number | null>;
+      volume?: Array<number | null>;
+    }>;
+  };
+}
+
+async function fetchChart(symbol: string, range: string): Promise<YahooChartResult> {
+  const res = await fetch(`${BASE}/${encodeURIComponent(symbol)}?interval=1d&range=${range}`, {
     headers: HEADERS,
   });
   if (!res.ok) throw new Error(`yahoo ${symbol}: HTTP ${res.status}`);
   const body = (await res.json()) as {
-    chart?: { result?: Array<{ meta?: ChartMeta }>; error?: { description?: string } | null };
+    chart?: { result?: YahooChartResult[]; error?: { description?: string } | null };
   };
-  const meta = body.chart?.result?.[0]?.meta;
-  if (!meta) throw new Error(`yahoo ${symbol}: ${body.chart?.error?.description ?? "no result"}`);
-  return meta;
+  const result = body.chart?.result?.[0];
+  if (!result?.meta) throw new Error(`yahoo ${symbol}: ${body.chart?.error?.description ?? "no result"}`);
+  return result;
+}
+
+async function fetchMeta(symbol: string): Promise<ChartMeta> {
+  return (await fetchChart(symbol, "1d")).meta!;
 }
 
 export function normalizeYahooQuote(symbol: string, meta: ChartMeta): ProviderQuote {
@@ -42,13 +74,84 @@ export function normalizeYahooQuote(symbol: string, meta: ChartMeta): ProviderQu
   }
   const currency = CurrencyCode.safeParse(meta.currency);
   if (!currency.success) throw new Error(`yahoo ${symbol}: unsupported currency "${meta.currency}"`);
+  const previousClose = meta.chartPreviousClose ?? meta.previousClose;
+  if (previousClose !== undefined && (!Number.isFinite(previousClose) || previousClose <= 0)) {
+    throw new Error(`yahoo ${symbol}: invalid previous close`);
+  }
+  if (meta.fiftyTwoWeekLow !== undefined && (!Number.isFinite(meta.fiftyTwoWeekLow) || meta.fiftyTwoWeekLow <= 0)) {
+    throw new Error(`yahoo ${symbol}: invalid 52-week low`);
+  }
+  if (meta.fiftyTwoWeekHigh !== undefined && (!Number.isFinite(meta.fiftyTwoWeekHigh) || meta.fiftyTwoWeekHigh <= 0)) {
+    throw new Error(`yahoo ${symbol}: invalid 52-week high`);
+  }
+  if (
+    meta.fiftyTwoWeekLow !== undefined &&
+    meta.fiftyTwoWeekHigh !== undefined &&
+    meta.fiftyTwoWeekLow > meta.fiftyTwoWeekHigh
+  ) {
+    throw new Error(`yahoo ${symbol}: invalid 52-week range`);
+  }
   return {
     symbol,
     price: meta.regularMarketPrice,
     currency: currency.data,
     asOf: new Date(meta.regularMarketTime * 1000).toISOString(),
     source: "yahoo",
-      delayed: true,
+    delayed: true,
+    ...(meta.longName || meta.shortName ? { name: meta.longName ?? meta.shortName } : {}),
+    changePct: previousClose === undefined ? null : ((meta.regularMarketPrice - previousClose) / previousClose) * 100,
+    week52Low: meta.fiftyTwoWeekLow ?? null,
+    week52High: meta.fiftyTwoWeekHigh ?? null,
+  };
+}
+
+export function normalizeYahooHistory(symbol: string, result: YahooChartResult): ProviderHistory {
+  const meta = result.meta;
+  if (!meta?.currency || meta.regularMarketTime === undefined) {
+    throw new Error(`yahoo ${symbol}: history missing currency/timestamp`);
+  }
+  const currency = CurrencyCode.safeParse(meta.currency);
+  if (!currency.success) throw new Error(`yahoo ${symbol}: unsupported currency "${meta.currency}"`);
+  if (!Number.isFinite(meta.regularMarketTime) || meta.regularMarketTime <= 0) {
+    throw new Error(`yahoo ${symbol}: history has invalid timestamp`);
+  }
+  const quote = result.indicators?.quote?.[0];
+  const timestamps = result.timestamp ?? [];
+  if (!quote || timestamps.length === 0) throw new Error(`yahoo ${symbol}: history has no candles`);
+  const candles = timestamps.flatMap((timestamp, index) => {
+    const open = quote.open?.[index];
+    const high = quote.high?.[index];
+    const low = quote.low?.[index];
+    const close = quote.close?.[index];
+    if ([open, high, low, close].some((value) => value === null || value === undefined)) return [];
+    if (![open, high, low, close].every((value) => Number.isFinite(value) && value! > 0)) {
+      throw new Error(`yahoo ${symbol}: invalid candle at index ${index}`);
+    }
+    if (!Number.isFinite(timestamp) || timestamp <= 0) {
+      throw new Error(`yahoo ${symbol}: invalid candle timestamp at index ${index}`);
+    }
+    if (low! > Math.min(open!, close!) || high! < Math.max(open!, close!) || low! > high!) {
+      throw new Error(`yahoo ${symbol}: inconsistent candle at index ${index}`);
+    }
+    const volume = quote.volume?.[index] ?? 0;
+    if (!Number.isFinite(volume) || volume < 0) throw new Error(`yahoo ${symbol}: invalid volume at index ${index}`);
+    return [{
+      time: new Date(timestamp * 1_000).toISOString().slice(0, 10),
+      open: open!,
+      high: high!,
+      low: low!,
+      close: close!,
+      volume,
+    }];
+  });
+  if (candles.length === 0) throw new Error(`yahoo ${symbol}: history has no complete candles`);
+  return {
+    symbol,
+    currency: currency.data,
+    asOf: new Date(meta.regularMarketTime * 1_000).toISOString(),
+    source: "yahoo",
+    delayed: true,
+    candles,
   };
 }
 
@@ -67,7 +170,7 @@ export function normalizeYahooFxRate(
   return { pair: `${from}${to}`, rate: quote.price, asOf: quote.asOf, source: "yahoo" };
 }
 
-export class YahooProvider implements MarketDataProvider, FxProvider {
+export class YahooProvider implements MarketDataProvider, FxProvider, HistoryProvider {
   readonly name = "yahoo";
 
   async getQuotes(symbols: string[]): Promise<ProviderQuote[]> {
@@ -97,5 +200,9 @@ export class YahooProvider implements MarketDataProvider, FxProvider {
     const symbol = `${from}${to}=X`;
     const meta = await fetchMeta(symbol);
     return normalizeYahooFxRate(from, to, meta);
+  }
+
+  async getHistory(symbol: string, range: "1mo" | "3mo" | "6mo" | "1y"): Promise<ProviderHistory> {
+    return normalizeYahooHistory(symbol, await fetchChart(symbol, range));
   }
 }

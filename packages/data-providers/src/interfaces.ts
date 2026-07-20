@@ -18,6 +18,33 @@ export interface ProviderQuote {
   asOf: string; // ISO-8601 with offset
   source: string; // e.g. "yahoo", "finnhub"
   delayed: boolean;
+  name?: string;
+  changePct?: number | null;
+  week52Low?: number | null;
+  week52High?: number | null;
+}
+
+export interface ProviderCandle {
+  time: string;
+  open: number;
+  high: number;
+  low: number;
+  close: number;
+  volume: number;
+}
+
+export interface ProviderHistory {
+  symbol: string;
+  currency: CurrencyCode;
+  asOf: string;
+  source: string;
+  delayed: boolean;
+  candles: ProviderCandle[];
+}
+
+export interface HistoryProvider {
+  readonly name: string;
+  getHistory(symbol: string, range: "1mo" | "3mo" | "6mo" | "1y"): Promise<ProviderHistory>;
 }
 
 export interface ProviderFundamentals {
