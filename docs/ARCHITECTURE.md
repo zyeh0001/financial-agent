@@ -287,3 +287,19 @@ interface NotificationAdapter { send(event: NotificationEvent): Promise<void> }
 
 Implementations: macOS notification (default), dashboard event; Slack/email if wanted.
 Expose as MCP only if the agent itself ever needs to send as a structured tool.
+
+**M4 implementation.** `npm run monitor` validates `data/rules.yaml`, fetches only the
+fields active rules require, derives portfolio observations from the newest validated
+health report, evaluates through finance-core, and appends alert creation/delivery records
+to `data/alerts.jsonl`. Creation is claimed under a filesystem lock before notification;
+pending deliveries are atomically leased so overlapping cycles cannot both send them;
+successful deliveries close the durable retry item, while failed or expired leases return
+to the next cycle. The default dedup window is 24 hours (`MONITOR_DEDUP_MINUTES` overrides
+it), delivery uses three exponential-backoff attempts, and a partial provider failure is
+audited without preventing unaffected rules or pending deliveries from running. The alert
+log fails closed on corruption because recovering past an unknown tail could duplicate a
+notification.
+
+The dashboard event adapter is the durable `alert-created` record itself; macOS Notification
+Center is the default human adapter. `npm run monitor:launchd -- --output <path>` renders the
+15-minute launchd plist with absolute paths. Rendering does not load or activate the agent.

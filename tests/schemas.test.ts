@@ -58,6 +58,17 @@ describe("alert rule schema", () => {
     ).toThrow();
   });
 
+  it("requires currency only for monetary rule fields", () => {
+    expect(() => AlertRule.parse({
+      ...validRule,
+      condition: { all: [{ field: "price", operator: "lt", value: 300 }] },
+    })).toThrow(/currency/i);
+    expect(() => AlertRule.parse({
+      ...validRule,
+      condition: { all: [{ field: "pe", operator: "lt", value: 40, currency: "USD" }] },
+    })).toThrow(/currency/i);
+  });
+
   it("rejects duplicate rule ids in a rules file", () => {
     expect(() => RulesFile.parse([validRule, validRule])).toThrow();
   });
@@ -167,6 +178,7 @@ describe("record schemas parse their documented examples", () => {
         condition: "price lt 300 USD",
         observedValue: 297.4,
         threshold: 300,
+        currency: "USD",
         observedAt: "2026-07-20T20:05:00Z",
         stale: false,
         severity: "informational",

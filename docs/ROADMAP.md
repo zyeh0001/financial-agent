@@ -94,12 +94,12 @@ arithmetic discrepancies, better source coverage.
 
 ## 4. Open decisions
 
-- **Notification channel default** — macOS notification + dashboard event to start; Slack/
-  email only if wanted. (Decide at M4.)
+- **Notification channel default** — decided at M4: macOS Notification Center plus durable
+  dashboard-readable `alert-created` events. Slack/email remain deferred until requested.
 - **Market-data/news provider for M5** — Yahoo remains the M1 quote/FX provider; SEC EDGAR
   is the decided original-filings provider. Revisit Finnhub/news only when M5 needs it.
-- **SQLite graduation** — Layer B stays JSONL/YAML until monitoring read patterns demand
-  more. (Revisit after M4.)
+- **SQLite graduation** — decided at M4: keep Layer B in locked JSONL/YAML; current monitoring
+  read patterns do not justify SQLite.
 - **Execution-skill isolation** — moot for Phase 1 (no execution skill exists); re-raise at
   Level 3 design.
 
@@ -113,4 +113,5 @@ arithmetic discrepancies, better source coverage.
 | 2026-07-20 | Rev 3 (design review): execution shapes **removed** from Phase 1 schemas entirely (supersedes "inert flag"); domain library separated from MCP; orchestrator-independent scheduler (launchd + CLI); notifications as internal adapter, not MCP; prompt-injection rules; M0 contracts-first; doc split PRD/ARCHITECTURE/SECURITY/ROADMAP; source-of-truth precedence defined, `portfolio.md` canonical until broker import (flip at Phase 2 L1); fixtures staged to actual portfolio contents; Claude Code the explicit Phase 1 runtime |
 | 2026-07-20 | M2 filings decision: use SEC EDGAR for original US filings through the official submissions API and archive; keep Yahoo for current quote/FX, defer any news-provider expansion to M5 |
 | 2026-07-20 | M3 dashboard decision: consume validated health-report/snapshot outputs through one storage read model; reload is read-only; snapshot v2 records report-run + portfolio-hash provenance; freshness and completeness are independent visible states |
+| 2026-07-20 | M4 monitoring decision: 15-minute launchd cycle; 24-hour configurable per-rule dedup; durable JSONL creation/delivery events; macOS + dashboard-event default; bounded notification retries; partial provider failures audited after unaffected work; no SQLite or LLM |
 | — | Claude "finance" plugin rejected (corporate FP&A domain, wrong fit) |

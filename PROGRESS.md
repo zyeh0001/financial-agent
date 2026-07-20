@@ -11,12 +11,36 @@ Update this file whenever a milestone (or meaningful chunk of one) lands.
 | M1 — Portfolio foundation | ✅ Done | 2026-07-20 |
 | M2 — Research workbench | ✅ Done | 2026-07-20 |
 | M3 — Dashboard integration | ✅ Done | 2026-07-20 |
-| M4 — Monitoring engine | ⬜ Not started | |
+| M4 — Monitoring engine | ✅ Done | 2026-07-20 |
 | M5 — Digest & proactive research | ⬜ Not started | |
 | M6 — Subagent quality pipeline (optional) | ⬜ Not started | |
 | Phase 2 — Codex + broker read-only | ⬜ Future | |
 
 ## Log
+
+### 2026-07-20 — M4 complete
+
+The monitoring engine is implemented as an orchestrator-independent, alert-only path:
+
+- **Deep deterministic seam** — finance-core evaluates flat `all`/`any` rules against
+  sourced observations and emits validated alerts carrying rule, condition, observed value,
+  threshold, structured currency, timestamp, source, staleness, and research-only framing.
+- **Selective collection and failure isolation** — each cycle fetches only the quote or
+  fundamentals inputs active rules need and derives portfolio fields from the newest
+  validated health report. A failed symbol/input is audited without blocking unaffected
+  rules or pending notifications.
+- **Durable exactly-once window** — locked JSONL creation claims prevent duplicate alert
+  events per rule inside the configurable dedup window. Delivery successes and failures are
+  separately retained; atomic delivery leases prevent overlapping cycles from double-sending,
+  while failures remain pending and are retried on the next cycle.
+- **Operational path** — `npm run monitor` writes complete run records without an LLM,
+  retries macOS notifications with bounded exponential backoff, and exposes each durable
+  creation event to dashboard readers. A render-only launchd command produces an absolute-
+  path 15-minute agent without silently installing or loading it.
+
+M4 exit criteria are covered by integration tests for rule evaluation, currency/staleness
+provenance, per-symbol provider failures, dedup, durable retry state, bounded notification
+retries, and a quiet audited CLI cycle. **Next: M5 — Digest & proactive research.**
 
 ### 2026-07-20 — M3 complete
 

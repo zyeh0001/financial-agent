@@ -38,7 +38,16 @@ export const RuleCondition = z
     /** required for `price`; meaningless for ratio/percentage fields */
     currency: CurrencyCode.optional(),
   })
-  .strict();
+  .strict()
+  .superRefine((condition, context) => {
+    const monetary = condition.field === "price" || condition.field === "market_cap";
+    if (monetary && condition.currency === undefined) {
+      context.addIssue({ code: z.ZodIssueCode.custom, path: ["currency"], message: "monetary fields require currency" });
+    }
+    if (!monetary && condition.currency !== undefined) {
+      context.addIssue({ code: z.ZodIssueCode.custom, path: ["currency"], message: "non-monetary fields must not declare currency" });
+    }
+  });
 export type RuleCondition = z.infer<typeof RuleCondition>;
 
 /** Flat, one level: all-of (AND) or any-of (OR). No nesting until a real rule needs it. */

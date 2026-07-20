@@ -9,3 +9,4 @@ export * from "./research/valuation.js";
 export * from "./research/options.js";
 export * from "./research/stock-report.js";
 export * from "./research/report-validation.js";
+export * from "./rules/evaluate.js";

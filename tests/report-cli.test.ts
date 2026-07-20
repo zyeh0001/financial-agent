@@ -33,6 +33,7 @@ describe("report validation CLI", () => {
         condition: "price lt 100 USD",
         observedValue: 99,
         threshold: 100,
+        currency: "USD",
         observedAt: "2026-07-20T20:05:00Z",
         stale: false,
         severity: "informational",

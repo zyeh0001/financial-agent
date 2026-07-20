@@ -9,6 +9,8 @@
   ],
   "scripts": {
     "health-report": "tsx scripts/health-report.ts",
+    "monitor": "tsx scripts/monitor.ts",
+    "monitor:launchd": "tsx scripts/render-monitor-launchd.ts",
     "journal": "tsx scripts/journal.ts",
     "valuation": "tsx scripts/valuation.ts",
     "options-payoff": "tsx scripts/options-payoff.ts",

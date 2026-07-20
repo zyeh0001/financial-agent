@@ -136,7 +136,26 @@ error; sync-conflict artifacts in report or snapshot storage also fail the read 
 The sibling dashboard may enrich the watchlist and serve OHLC through the shared Yahoo
 provider, but it does not parse or value the portfolio and exposes no data-write endpoint.
 
-## 10. M0 exit criteria — status
+## 10. Monitoring contracts (M4)
+
+- `evaluateAlertRules({ rules, observations, runId, generatedAt })` is the deterministic
+  finance-core seam. It performs no I/O and returns schema-validated `monitorAlert` records.
+- Percentage observations (`position_pct`, `bucket_pct`, `pnl_pct_from_entry`) use percentage
+  points (for example, `12.5` means 12.5%), matching user-authored threshold language.
+- Monetary conditions (`price`, `market_cap`) require currency; all other fields reject it.
+  Alerts carry structured currency (or `null`), source, observed/data timestamps, threshold,
+  stale state, rule ID, and the mandatory observation-not-instruction guidance.
+- `alerts.jsonl` is an event log: `alert-created` records are dashboard-readable events and
+  `alert-delivery` records retain every terminal adapter attempt. A successful delivery is
+  the only state that removes an event from the pending queue.
+- Dedup is per rule ID inside the scheduler's configured window and is serialized by a
+  macOS `shlock` (atomic `link(2)` plus PID-liveness recovery). Pending delivery is atomically leased before adapter I/O, so overlapping
+  cycles cannot send the same event. A retry can deliver an existing pending event but
+  cannot create another event in the same window.
+- Provider failures are isolated per symbol/input, recorded in `runs.jsonl`, and cause a
+  non-zero CLI exit after unaffected evaluation and delivery work completes. No LLM is used.
+
+## 11. M0 exit criteria — status
 
 - [x] Schemas versioned (`schemaVersion` on every record)
 - [x] Golden fixtures pass against finance-core (23 tests: fixtures + schema guards + storage)

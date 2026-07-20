@@ -1,0 +1,13 @@
+- id: example-price-watch
+  schemaVersion: 1
+  status: paused
+  symbol: EXAMPLE
+  condition:
+    all:
+      - field: price
+        operator: lt
+        value: 100
+        currency: USD
+  notification:
+    severity: informational
+    messageTemplate: price-watch

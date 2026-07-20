@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>com.financial-agent.monitor</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>__NODE_PATH__</string>
+    <string>__REPO_PATH__/node_modules/tsx/dist/cli.mjs</string>
+    <string>__REPO_PATH__/scripts/monitor.ts</string>
+  </array>
+  <key>WorkingDirectory</key><string>__REPO_PATH__</string>
+  <key>EnvironmentVariables</key>
+  <dict><key>INVESTMENT_DIR</key><string>__INVESTMENT_DIR__</string></dict>
+  <key>StartInterval</key><integer>900</integer>
+  <key>RunAtLoad</key><true/>
+  <key>StandardOutPath</key><string>__LOG_DIR__/monitor.stdout.log</string>
+  <key>StandardErrorPath</key><string>__LOG_DIR__/monitor.stderr.log</string>
+</dict>
+</plist>

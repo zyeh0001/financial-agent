@@ -392,6 +392,8 @@ export const MonitorAlert = z
     condition: z.string().min(1),
     observedValue: z.number().finite(),
     threshold: z.number().finite(),
+    /** null for ratios/counts; structured currency for monetary observations */
+    currency: CurrencyCode.nullable(),
     observedAt: IsoTimestamp,
     stale: z.boolean(),
     severity: z.enum(["informational", "attention", "urgent"]),
