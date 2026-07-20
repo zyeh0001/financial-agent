@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "symbol": "EXAMPLE",
+  "currency": "USD",
+  "dataAsOf": "2026-07-19T00:00:00Z",
+  "freeCashFlow": {
+    "value": 100,
+    "currency": "USD",
+    "asOf": "2026-07-19T00:00:00Z",
+    "source": "Replace with original filing URL and line item"
+  },
+  "netDebt": {
+    "value": 0,
+    "currency": "USD",
+    "asOf": "2026-07-19T00:00:00Z",
+    "source": "Replace with original filing URL and calculation"
+  },
+  "sharesOutstanding": {
+    "value": 10,
+    "asOf": "2026-07-19T00:00:00Z",
+    "source": "Replace with original filing URL and diluted share count"
+  },
+  "forecastYears": 5,
+  "scenarios": {
+    "bear": { "growthRate": 0, "terminalGrowthRate": 0.01, "discountRate": 0.12 },
+    "base": { "growthRate": 0.05, "terminalGrowthRate": 0.02, "discountRate": 0.1 },
+    "bull": { "growthRate": 0.08, "terminalGrowthRate": 0.03, "discountRate": 0.08 }
+  },
+  "sensitivity": {
+    "discountRates": [0.08, 0.1, 0.12],
+    "terminalGrowthRates": [0.01, 0.02, 0.03]
+  }
+}

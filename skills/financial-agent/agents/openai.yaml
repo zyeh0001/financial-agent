@@ -1,0 +1,4 @@
+interface:
+  display_name: "Personal Financial Research"
+  short_description: "Reproducible private investment research"
+  default_prompt: "Use $financial-agent to research this stock with sourced facts, reproducible calculations, risks, and explicit unknowns."

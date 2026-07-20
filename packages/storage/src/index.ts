@@ -1,19 +1,13 @@
 import { promises as fs } from "node:fs";
-import { dirname, join } from "node:path";
-import { randomBytes } from "node:crypto";
+
+export * from "./files.js";
+export * from "./journal.js";
 
 /**
  * Storage integrity primitives (ARCHITECTURE §5). Layer B lives under an
  * Obsidian/git-synced folder, so writes must be atomic and reads must survive
  * a crash mid-append and sync-conflict artifacts.
  */
-
-/** Write via temp file + rename — readers never observe a partial file. */
-export async function atomicWriteFile(path: string, data: string): Promise<void> {
-  const tmp = join(dirname(path), `.${randomBytes(6).toString("hex")}.tmp`);
-  await fs.writeFile(tmp, data, "utf8");
-  await fs.rename(tmp, path);
-}
 
 /** Append one JSONL record (single write syscall for the whole line). */
 export async function appendJsonl(path: string, record: unknown): Promise<void> {
@@ -50,22 +44,4 @@ export async function readJsonl<T>(path: string): Promise<JsonlReadResult<T>> {
     }
   }
   return { records, corruptTail: null };
-}
-
-/** Obsidian/iCloud/git sync-conflict artifacts near a data file. */
-export async function detectSyncConflicts(path: string): Promise<string[]> {
-  const dir = dirname(path);
-  const base = path.slice(dir.length + 1);
-  const stem = base.replace(/\.[^.]+$/, "");
-  let entries: string[];
-  try {
-    entries = await fs.readdir(dir);
-  } catch {
-    return [];
-  }
-  const patterns = [/sync-conflict/i, /conflicted copy/i, /\.orig$/];
-  return entries
-    .filter((e) => e !== base && e.startsWith(stem))
-    .filter((e) => patterns.some((p) => p.test(e)))
-    .map((e) => join(dir, e));
 }

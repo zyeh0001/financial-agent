@@ -9,7 +9,7 @@ Update this file whenever a milestone (or meaningful chunk of one) lands.
 |---|---|---|
 | M0 — Contracts, source of truth, fixtures | ✅ Done | 2026-07-20 |
 | M1 — Portfolio foundation | ✅ Done | 2026-07-20 |
-| M2 — Research workbench | ⬜ Not started | |
+| M2 — Research workbench | ✅ Done | 2026-07-20 |
 | M3 — Dashboard integration | ⬜ Not started | |
 | M4 — Monitoring engine | ⬜ Not started | |
 | M5 — Digest & proactive research | ⬜ Not started | |
@@ -17,6 +17,40 @@ Update this file whenever a milestone (or meaningful chunk of one) lands.
 | Phase 2 — Codex + broker read-only | ⬜ Future | |
 
 ## Log
+
+### 2026-07-20 — M2 complete
+
+The research workbench is implemented end to end:
+
+- **Reproducible calculations** — versioned two-stage DCF and covered-call/long-call payoff
+  records retain exact sourced inputs, canonical SHA-256 input hashes, results, timestamps,
+  and run IDs. `npm run valuation` and `npm run options-payoff` create immutable outputs and
+  real start/finish audit records. M1's health-report remains the deterministic allocation
+  calculator, avoiding a second implementation of portfolio weights and drift.
+- **Strict reports** — stock research, valuation v2, earnings, and options schemas join the
+  existing report types. Numeric evidence carries structured units and currency; earnings
+  actuals and expectations retain independent provenance. The strict validator recomputes
+  supplied calculation records, rejects altered hashes/results, and compares report inputs,
+  assumptions, sensitivity, scenarios, payoff, and discipline values. The report CLI uses
+  this strict path.
+- **Complete stock-report path** — `buildStockResearchReport` derives every valuation and
+  discipline number from a verified DCF record. Tampered report values, hashes, and stored
+  calculation outputs fail release tests.
+- **Original filings** — the SEC EDGAR adapter resolves ticker → CIK through the official
+  map, searches official submissions metadata, requires a declared contact User-Agent, and
+  retrieves content only from allowlisted SEC archive URLs. External content remains
+  untrusted data.
+- **Journal** — validated Markdown entries and linked postmortems are atomically created and
+  searchable by ticker/date. Writes fail on sync conflicts or malformed links and require
+  the confirmed, audited CLI boundary; no real journal record was created during M2.
+- **Workflow assets** — a lean `financial-agent` skill router uses progressive-disclosure
+  references for stock research, valuation, earnings, options, risk review, source analysis,
+  portfolio health, planning, journal, experiments, monitoring, and digest work. Report,
+  journal, and schema-valid calculation-input templates are included.
+
+Automated status: 55 tests passing across 12 files; TypeScript typecheck passing; skill
+frontmatter validated. Independent standards and spec reviews report no unresolved P1/P2
+findings. All M2 exit criteria are met. **Next: M3 — Dashboard integration.**
 
 ### 2026-07-20 — M1 complete
 

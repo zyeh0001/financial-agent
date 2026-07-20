@@ -5,9 +5,11 @@
   "type": "module",
   "exports": {
     ".": "./src/interfaces.ts",
-    "./yahoo": "./src/yahoo.ts"
+    "./yahoo": "./src/yahoo.ts",
+    "./sec-edgar": "./src/sec-edgar.ts"
   },
   "dependencies": {
-    "@financial-agent/finance-core": "*"
+    "@financial-agent/finance-core": "*",
+    "zod": "^3.24.0"
   }
 }

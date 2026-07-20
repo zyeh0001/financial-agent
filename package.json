@@ -9,6 +9,10 @@
   ],
   "scripts": {
     "health-report": "tsx scripts/health-report.ts",
+    "journal": "tsx scripts/journal.ts",
+    "valuation": "tsx scripts/valuation.ts",
+    "options-payoff": "tsx scripts/options-payoff.ts",
+    "reports:validate": "tsx scripts/validate-report.ts",
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit"

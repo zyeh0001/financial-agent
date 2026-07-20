@@ -5,5 +5,9 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@financial-agent/finance-core": "*",
+    "yaml": "^2.9.0"
   }
 }

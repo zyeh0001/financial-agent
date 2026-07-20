@@ -250,6 +250,11 @@ observed value, threshold, timestamp, source, staleness status, research-only li
 Stock reports end with the discipline block: *attractive below / fair range / too
 optimistic above / invalidated if / next data point* — never bare buy/sell/hold.
 
+Validation has two stages: the report-type schema checks shape and structured provenance;
+the strict validator resolves each calculation reference against its immutable record and
+compares the input hash, assumptions/terms, sensitivity, outputs, and numeric discipline
+band. A well-formed but invented run ID or hash is invalid.
+
 ## 11. Scheduler & notifications
 
 **Orchestrator-independent.** macOS `launchd` → `financial-agent` CLI → finance-core →

@@ -96,8 +96,8 @@ arithmetic discrepancies, better source coverage.
 
 - **Notification channel default** — macOS notification + dashboard event to start; Slack/
   email only if wanted. (Decide at M4.)
-- **Market-data / filings provider** — extend Yahoo/Finnhub chain vs. add SEC EDGAR.
-  (Decide at M2/M5.)
+- **Market-data/news provider for M5** — Yahoo remains the M1 quote/FX provider; SEC EDGAR
+  is the decided original-filings provider. Revisit Finnhub/news only when M5 needs it.
 - **SQLite graduation** — Layer B stays JSONL/YAML until monitoring read patterns demand
   more. (Revisit after M4.)
 - **Execution-skill isolation** — moot for Phase 1 (no execution skill exists); re-raise at
@@ -111,4 +111,5 @@ arithmetic discrepancies, better source coverage.
 | 2026-07-17 | ~~Per-rule `mode: alert\|execute`; IBKR draft-only in Phase 1 M5/M6~~ *(superseded)* |
 | 2026-07-20 | Rev 2: no order placement in Phase 1; deep-analysis skills added; profile split; hooks + evals mandatory; subagents staged; Layer A stays in `Investment/`; agent core in standalone repo, dashboard UI-only |
 | 2026-07-20 | Rev 3 (design review): execution shapes **removed** from Phase 1 schemas entirely (supersedes "inert flag"); domain library separated from MCP; orchestrator-independent scheduler (launchd + CLI); notifications as internal adapter, not MCP; prompt-injection rules; M0 contracts-first; doc split PRD/ARCHITECTURE/SECURITY/ROADMAP; source-of-truth precedence defined, `portfolio.md` canonical until broker import (flip at Phase 2 L1); fixtures staged to actual portfolio contents; Claude Code the explicit Phase 1 runtime |
+| 2026-07-20 | M2 filings decision: use SEC EDGAR for original US filings through the official submissions API and archive; keep Yahoo for current quote/FX, defer any news-provider expansion to M5 |
 | — | Claude "finance" plugin rejected (corporate FP&A domain, wrong fit) |
