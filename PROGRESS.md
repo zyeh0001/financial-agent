@@ -13,10 +13,35 @@ Update this file whenever a milestone (or meaningful chunk of one) lands.
 | M3 — Dashboard integration | ✅ Done | 2026-07-20 |
 | M4 — Monitoring engine | ✅ Done | 2026-07-20 |
 | M5 — Digest & proactive research | ✅ Done | 2026-07-20 |
-| M6 — Subagent quality pipeline (optional) | ⬜ Not started | |
+| M6 — Subagent quality pipeline (optional) | ✅ Done | 2026-07-20 |
 | Phase 2 — Codex + broker read-only | ⬜ Future | |
 
 ## Log
+
+### 2026-07-20 — M6 complete
+
+The optional quality pipeline is implemented behind deterministic validation:
+
+- **Two narrow read-only roles** — `risk-manager` receives only claims and existing report
+  risks; `source/fact-checker` receives only claims and evidence. Portfolio access, writes,
+  network mutations, messaging, and execution are absent from their contracts and role tools.
+- **Deterministic authority retained** — schema issues fail closed; arithmetic discrepancies
+  derive only from completed calculation checks; source mappings must cite pre-verified
+  evidence already attached to that claim. Reviewers cannot alter any of those inputs.
+  Strict schemas reject malformed, contradictory, false-positive, or unknown-ID output.
+- **Hard budget** — zero, one, or two reviewer calls are allowed explicitly; an over-budget
+  pipeline fails before invoking either reviewer. With no adapter, deterministic baseline
+  findings remain available without a model call.
+- **Measured adoption** — a gold-labelled evaluator compares unsupported-claim recall, risk
+  recall, arithmetic-discrepancy recall, and source coverage. A candidate passes only with a
+  strict improvement and no regression. The CLI persists the comparison for audit.
+- **No speculative agent sprawl** — the worked M6 benchmark supports the two planned roles;
+  equity, valuation, options, macro, and tax specialists remain deferred pending a measured
+  deficit on representative cases.
+
+M6 exit criteria are covered by behavior tests for numeric quality deltas, portfolio-free
+review projections, immutable deterministic findings, strict call budgets, and durable CLI
+evaluation output. **Next: Phase 2 — Codex + broker read-only, when explicitly started.**
 
 ### 2026-07-20 — M5 complete
 

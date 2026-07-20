@@ -1,0 +1,7 @@
+{
+  "schemaVersion": 1,
+  "unsupportedClaimIds": [],
+  "riskIds": ["risk-customer-concentration"],
+  "arithmeticDiscrepancyIds": [],
+  "sourcedClaimIds": ["claim-reported-fcf", "claim-reported-net-debt"]
+}

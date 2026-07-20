@@ -17,6 +17,7 @@
     "valuation": "tsx scripts/valuation.ts",
     "options-payoff": "tsx scripts/options-payoff.ts",
     "reports:validate": "tsx scripts/validate-report.ts",
+    "quality:evaluate": "tsx scripts/evaluate-quality.ts",
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit"

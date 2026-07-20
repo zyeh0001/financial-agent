@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "caseId": "m6-worked-research-review",
+  "expectedUnsupportedClaimIds": ["claim-growth-accelerates"],
+  "expectedRiskIds": ["risk-customer-concentration", "risk-refinancing"],
+  "expectedArithmeticDiscrepancyIds": ["calc-diluted-share-count"],
+  "claimIds": [
+    "claim-reported-fcf",
+    "claim-growth-accelerates",
+    "claim-reported-margin",
+    "claim-reported-net-debt"
+  ]
+}

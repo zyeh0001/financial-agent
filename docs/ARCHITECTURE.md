@@ -320,3 +320,22 @@ Finnhub credentials come from the trusted process environment or macOS Keychain 
 Keys are never written into plist files, reports, or logs.
 Validated digest reports are immutable under `data/digests/` and provide the seen-event set
 for subsequent daily/weekly runs.
+
+**M6 quality-review flow.** Deterministic schema and calculation validation remains the
+first gate. A narrow `ReadOnlyReviewArtifact` carries schema-validation issues, completed
+calculation checks, and pre-verified evidence nested under its claim. The pipeline rejects
+schema issues, derives arithmetic discrepancies only from those checks, and accepts a source
+mapping only when its URL belongs to that claim's verified evidence. It may then project to
+two optional,
+budgeted reviewers: `risk-manager` sees claims and already-recorded risks, while
+`source/fact-checker` sees claims and their evidence. Neither input contains portfolio data;
+neither reviewer can alter deterministic arithmetic findings. Their independent projections
+are cloned and frozen. Untrusted output is strictly parsed into auditable risk details and
+verified claim/source mappings before it becomes a `QualityReviewFindings` record.
+
+Adoption is benchmark-gated rather than based on a reviewer judging itself. A fixed,
+gold-labelled case scores unsupported-claim recall, risk recall, arithmetic-discrepancy
+recall, and source coverage. `npm run quality:evaluate` persists baseline, candidate, and
+deltas; a candidate passes only with at least one strict improvement and no regression.
+Additional specialist reviewers remain deferred until a representative benchmark exposes a
+specific measured deficit.

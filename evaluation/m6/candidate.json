@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "unsupportedClaimIds": ["claim-growth-accelerates"],
+  "riskIds": ["risk-customer-concentration", "risk-refinancing"],
+  "arithmeticDiscrepancyIds": ["calc-diluted-share-count"],
+  "sourcedClaimIds": [
+    "claim-reported-fcf",
+    "claim-reported-margin",
+    "claim-reported-net-debt"
+  ]
+}
