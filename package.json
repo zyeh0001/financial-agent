@@ -1,0 +1,20 @@
+{
+  "name": "financial-agent",
+  "private": true,
+  "version": "0.0.1",
+  "description": "Personal investment research agent — core packages, skills, and contracts. Phase 1: research/monitoring only, no execution capability.",
+  "type": "module",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "typescript": "^5.7.2",
+    "vitest": "^3.0.0"
+  }
+}

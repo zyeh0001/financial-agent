@@ -1,0 +1,12 @@
+{
+  "name": "@financial-agent/data-providers",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/interfaces.ts"
+  },
+  "dependencies": {
+    "@financial-agent/finance-core": "*"
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "name": "stale-price",
+  "description": "Quote 5 days old (> 30h threshold): still valued, but visibly flagged stale — never silently treated as fresh.",
+  "valuationCurrency": "AUD",
+  "now": "2026-07-20T20:00:00Z",
+  "fx": { "USDAUD": 1.55 },
+  "fxTimestamp": "2026-07-20T20:00:00Z",
+  "buckets": { "MSFT": "individual" },
+  "transactions": [
+    { "schemaVersion": 1, "id": "txn_20260701_0001", "ts": "2026-07-01T14:30:00Z", "type": "DEPOSIT", "amount": 1000, "currency": "USD" },
+    { "schemaVersion": 1, "id": "txn_20260701_0002", "ts": "2026-07-01T14:35:00Z", "type": "BUY", "symbol": "MSFT", "quantity": 1, "price": 400, "fee": 0, "currency": "USD" }
+  ],
+  "quotes": {
+    "MSFT": { "symbol": "MSFT", "price": 410, "currency": "USD", "asOf": "2026-07-15T20:00:00Z", "source": "fixture" }
+  },
+  "expected": {
+    "totalValue": 1565.5,
+    "cash": { "USD": 600 },
+    "positions": [
+      { "symbol": "MSFT", "quantity": 1, "value": 635.5, "weight": 0.405941, "unrealizedPnl": 15.5, "stale": true }
+    ],
+    "bucketWeights": { "individual": 0.405941, "cash": 0.594059 },
+    "currencyExposure": { "USD": 1.0 },
+    "realizedPnl": 0,
+    "dividends": 0,
+    "staleQuotes": ["MSFT"],
+    "concentrationFlags": ["MSFT"]
+  }
+}

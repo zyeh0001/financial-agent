@@ -1,0 +1,30 @@
+{
+  "name": "dividend",
+  "description": "Dividend lands in cash and is tracked as income, not as realized P&L.",
+  "valuationCurrency": "AUD",
+  "now": "2026-07-20T20:00:00Z",
+  "fx": { "USDAUD": 1.55 },
+  "fxTimestamp": "2026-07-20T20:00:00Z",
+  "buckets": { "VOO": "etf" },
+  "transactions": [
+    { "schemaVersion": 1, "id": "txn_20260701_0001", "ts": "2026-07-01T14:30:00Z", "type": "DEPOSIT", "amount": 5000, "currency": "USD" },
+    { "schemaVersion": 1, "id": "txn_20260701_0002", "ts": "2026-07-01T14:35:00Z", "type": "BUY", "symbol": "VOO", "quantity": 10, "price": 480, "fee": 0, "currency": "USD" },
+    { "schemaVersion": 1, "id": "txn_20260715_0003", "ts": "2026-07-15T13:00:00Z", "type": "DIVIDEND", "symbol": "VOO", "amount": 15, "currency": "USD" }
+  ],
+  "quotes": {
+    "VOO": { "symbol": "VOO", "price": 500, "currency": "USD", "asOf": "2026-07-20T20:00:00Z", "source": "fixture" }
+  },
+  "expected": {
+    "totalValue": 8083.25,
+    "cash": { "USD": 215 },
+    "positions": [
+      { "symbol": "VOO", "quantity": 10, "value": 7750, "weight": 0.958772, "unrealizedPnl": 310, "stale": false }
+    ],
+    "bucketWeights": { "etf": 0.958772, "cash": 0.041228 },
+    "currencyExposure": { "USD": 1.0 },
+    "realizedPnl": 0,
+    "dividends": 23.25,
+    "staleQuotes": [],
+    "concentrationFlags": []
+  }
+}

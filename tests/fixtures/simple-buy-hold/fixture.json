@@ -1,0 +1,29 @@
+{
+  "name": "simple-buy-hold",
+  "description": "Deposit USD, buy an ETF with a fee, hold. Fee capitalizes into cost basis.",
+  "valuationCurrency": "AUD",
+  "now": "2026-07-20T20:00:00Z",
+  "fx": { "USDAUD": 1.55 },
+  "fxTimestamp": "2026-07-20T20:00:00Z",
+  "buckets": { "VOO": "etf" },
+  "transactions": [
+    { "schemaVersion": 1, "id": "txn_20260701_0001", "ts": "2026-07-01T14:30:00Z", "type": "DEPOSIT", "amount": 10000, "currency": "USD" },
+    { "schemaVersion": 1, "id": "txn_20260701_0002", "ts": "2026-07-01T14:35:00Z", "type": "BUY", "symbol": "VOO", "quantity": 10, "price": 500, "fee": 2, "currency": "USD" }
+  ],
+  "quotes": {
+    "VOO": { "symbol": "VOO", "price": 520, "currency": "USD", "asOf": "2026-07-20T20:00:00Z", "source": "fixture" }
+  },
+  "expected": {
+    "totalValue": 15806.9,
+    "cash": { "USD": 4998 },
+    "positions": [
+      { "symbol": "VOO", "quantity": 10, "value": 8060, "weight": 0.509904, "unrealizedPnl": 306.9, "stale": false }
+    ],
+    "bucketWeights": { "etf": 0.509904, "cash": 0.490096 },
+    "currencyExposure": { "USD": 1.0 },
+    "realizedPnl": 0,
+    "dividends": 0,
+    "staleQuotes": [],
+    "concentrationFlags": []
+  }
+}

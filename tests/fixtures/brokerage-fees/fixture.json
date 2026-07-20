@@ -1,0 +1,30 @@
+{
+  "name": "brokerage-fees",
+  "description": "Buy fee capitalizes into basis (171 not 170); sell fee reduces proceeds. Realized = (5×180 − 5) − 5×171 = 40 USD.",
+  "valuationCurrency": "AUD",
+  "now": "2026-07-20T20:00:00Z",
+  "fx": { "USDAUD": 1.55 },
+  "fxTimestamp": "2026-07-20T20:00:00Z",
+  "buckets": { "NVDA": "individual" },
+  "transactions": [
+    { "schemaVersion": 1, "id": "txn_20260701_0001", "ts": "2026-07-01T14:30:00Z", "type": "DEPOSIT", "amount": 10000, "currency": "USD" },
+    { "schemaVersion": 1, "id": "txn_20260701_0002", "ts": "2026-07-01T14:35:00Z", "type": "BUY", "symbol": "NVDA", "quantity": 10, "price": 170, "fee": 10, "currency": "USD" },
+    { "schemaVersion": 1, "id": "txn_20260710_0003", "ts": "2026-07-10T15:00:00Z", "type": "SELL", "symbol": "NVDA", "quantity": 5, "price": 180, "fee": 5, "currency": "USD" }
+  ],
+  "quotes": {
+    "NVDA": { "symbol": "NVDA", "price": 175, "currency": "USD", "asOf": "2026-07-20T20:00:00Z", "source": "fixture" }
+  },
+  "expected": {
+    "totalValue": 15593,
+    "cash": { "USD": 9185 },
+    "positions": [
+      { "symbol": "NVDA", "quantity": 5, "value": 1356.25, "weight": 0.086978, "unrealizedPnl": 31, "stale": false }
+    ],
+    "bucketWeights": { "individual": 0.086978, "cash": 0.913022 },
+    "currencyExposure": { "USD": 1.0 },
+    "realizedPnl": 62,
+    "dividends": 0,
+    "staleQuotes": [],
+    "concentrationFlags": []
+  }
+}

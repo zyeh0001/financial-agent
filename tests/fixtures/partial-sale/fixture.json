@@ -1,0 +1,30 @@
+{
+  "name": "partial-sale",
+  "description": "Buy 10, sell 4 with a fee. Realized P&L = net proceeds minus average-cost basis; remaining 6 keep original basis. Position >10% triggers concentration flag.",
+  "valuationCurrency": "AUD",
+  "now": "2026-07-20T20:00:00Z",
+  "fx": { "USDAUD": 1.55 },
+  "fxTimestamp": "2026-07-20T20:00:00Z",
+  "buckets": { "AVGO": "individual" },
+  "transactions": [
+    { "schemaVersion": 1, "id": "txn_20260701_0001", "ts": "2026-07-01T14:30:00Z", "type": "DEPOSIT", "amount": 6000, "currency": "USD" },
+    { "schemaVersion": 1, "id": "txn_20260701_0002", "ts": "2026-07-01T14:35:00Z", "type": "BUY", "symbol": "AVGO", "quantity": 10, "price": 500, "fee": 0, "currency": "USD" },
+    { "schemaVersion": 1, "id": "txn_20260710_0003", "ts": "2026-07-10T15:00:00Z", "type": "SELL", "symbol": "AVGO", "quantity": 4, "price": 550, "fee": 1, "currency": "USD" }
+  ],
+  "quotes": {
+    "AVGO": { "symbol": "AVGO", "price": 560, "currency": "USD", "asOf": "2026-07-20T20:00:00Z", "source": "fixture" }
+  },
+  "expected": {
+    "totalValue": 10166.45,
+    "cash": { "USD": 3199 },
+    "positions": [
+      { "symbol": "AVGO", "quantity": 6, "value": 5208, "weight": 0.512273, "unrealizedPnl": 558, "stale": false }
+    ],
+    "bucketWeights": { "individual": 0.512273, "cash": 0.487727 },
+    "currencyExposure": { "USD": 1.0 },
+    "realizedPnl": 308.45,
+    "dividends": 0,
+    "staleQuotes": [],
+    "concentrationFlags": ["AVGO"]
+  }
+}

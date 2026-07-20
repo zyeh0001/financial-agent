@@ -1,0 +1,30 @@
+{
+  "name": "aud-usd-deposit",
+  "description": "AUD deposit, explicit FX_CONVERT to USD, then a USD buy. Currency only ever changes via an explicit FX transaction (zero silent conversions); mixed-currency exposure computed correctly.",
+  "valuationCurrency": "AUD",
+  "now": "2026-07-20T20:00:00Z",
+  "fx": { "USDAUD": 1.55 },
+  "fxTimestamp": "2026-07-20T20:00:00Z",
+  "buckets": { "VOO": "etf" },
+  "transactions": [
+    { "schemaVersion": 1, "id": "txn_20260701_0001", "ts": "2026-07-01T14:30:00Z", "type": "DEPOSIT", "amount": 10000, "currency": "AUD" },
+    { "schemaVersion": 1, "id": "txn_20260701_0002", "ts": "2026-07-01T14:32:00Z", "type": "FX_CONVERT", "fromCurrency": "AUD", "fromAmount": 3100, "toCurrency": "USD", "toAmount": 2000 },
+    { "schemaVersion": 1, "id": "txn_20260701_0003", "ts": "2026-07-01T14:35:00Z", "type": "BUY", "symbol": "VOO", "quantity": 2, "price": 500, "fee": 0, "currency": "USD" }
+  ],
+  "quotes": {
+    "VOO": { "symbol": "VOO", "price": 520, "currency": "USD", "asOf": "2026-07-20T20:00:00Z", "source": "fixture" }
+  },
+  "expected": {
+    "totalValue": 10062,
+    "cash": { "AUD": 6900, "USD": 1000 },
+    "positions": [
+      { "symbol": "VOO", "quantity": 2, "value": 1612, "weight": 0.160207, "unrealizedPnl": 62, "stale": false }
+    ],
+    "bucketWeights": { "etf": 0.160207, "cash": 0.839793 },
+    "currencyExposure": { "AUD": 0.685749, "USD": 0.314251 },
+    "realizedPnl": 0,
+    "dividends": 0,
+    "staleQuotes": [],
+    "concentrationFlags": []
+  }
+}
